@@ -10,22 +10,21 @@ RUN npm ci --workspace=@planview/web --workspace=@planview/shared --include-work
 COPY packages/shared/ packages/shared/
 COPY apps/web/ apps/web/
 
-ARG VITE_API_URL
-ARG VITE_WS_URL
+# Vite needs env vars at build time
+ARG VITE_API_URL=https://planview-api.onrender.com
+ARG VITE_WS_URL=wss://planview-api.onrender.com
 ENV VITE_API_URL=${VITE_API_URL}
 ENV VITE_WS_URL=${VITE_WS_URL}
 
 RUN cd apps/web && npx vite build
 
 # ─── Production Stage ───
-FROM nginx:1.25-alpine AS production
+FROM nginx:1.25-alpine
 
-COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
+# Copy nginx config and built files
+COPY --from=builder /app/apps/web/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/apps/web/dist /usr/share/nginx/html
 
-EXPOSE 80
-
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-  CMD wget -qO- http://localhost:80/ || exit 1
+EXPOSE 10000
 
 CMD ["nginx", "-g", "daemon off;"]
