@@ -68,32 +68,18 @@ async function bootstrap() {
     const dataSource = app.get<import('typeorm').DataSource>(
       (await import('@nestjs/typeorm')).getDataSourceToken() as any,
     );
-    const fs = await import('fs');
-    const path = await import('path');
-    // Check if tables exist
     const result = await dataSource.query(
       "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'tenants'",
     );
     if (parseInt(result[0].count, 10) === 0) {
-      logger.log('No tables found — running init.sql...');
-      const sqlPath = path.join(__dirname, 'database', 'init.sql');
-      if (fs.existsSync(sqlPath)) {
-        const sql = fs.readFileSync(sqlPath, 'utf8');
-        // Split by semicolons and run each statement
-        const statements = sql.split(';').filter((s: string) => s.trim().length > 0);
-        for (const stmt of statements) {
-          try { await dataSource.query(stmt); } catch (e: any) {
-            // Ignore errors for CREATE IF NOT EXISTS, etc.
-            if (!e.message?.includes('already exists')) {
-              logger.warn(`Init SQL warning: ${e.message?.slice(0, 100)}`);
-            }
-          }
-        }
-        logger.log('Database initialized successfully');
-      }
+      logger.log('No tables found — creating schema from entities...');
+      await dataSource.synchronize();
+      logger.log('Database schema created successfully');
+    } else {
+      logger.log('Database tables already exist');
     }
   } catch (e: any) {
-    logger.warn(`DB auto-init skipped: ${e.message?.slice(0, 100)}`);
+    logger.error(`DB auto-init failed: ${e.message}`);
   }
 
   const port = process.env.PORT || 4000;
