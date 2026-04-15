@@ -1,0 +1,140 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-800: #1e3a5f;
+  --brand-500: #3b82f6;
+  --status-active: #3b82f6;
+  --status-done: #22c55e;
+  --status-delayed: #ef4444;
+  --status-planned: #94a3b8;
+
+  /* Light mode surfaces */
+  --bg-app: #f5f6f8;
+  --bg-surface: #ffffff;
+  --bg-hover: #f3f4f6;
+  --bg-sidebar: #0f172a;
+  --bg-input: #fafbfc;
+  --text-primary: #1a1d23;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --border: #e5e7eb;
+  --border-light: #f3f4f6;
+  --shadow: rgba(0,0,0,0.04);
+  --gantt-weekend: rgba(0,0,0,0.015);
+  --gantt-row: #ffffff;
+  --gantt-row-selected: #eff6ff;
+}
+
+.dark {
+  --bg-app: #0d1117;
+  --bg-surface: #161b22;
+  --bg-hover: #1c2128;
+  --bg-sidebar: #010409;
+  --bg-input: #0d1117;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #6e7681;
+  --border: #30363d;
+  --border-light: #21262d;
+  --shadow: rgba(0,0,0,0.3);
+  --gantt-weekend: rgba(255,255,255,0.02);
+  --gantt-row: #161b22;
+  --gantt-row-selected: #1c2d4f;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--bg-app);
+  color: var(--text-primary);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+.dark ::-webkit-scrollbar-thumb { background: #30363d; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
+/* Smooth transitions */
+* { transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* ─── Mobile Responsive ─────────────────────────────────────── */
+
+/* Mobile sidebar: hidden by default, shown as overlay */
+@media (max-width: 768px) {
+  .sidebar-desktop { display: none !important; }
+  .sidebar-mobile-overlay {
+    position: fixed; inset: 0; z-index: 60;
+    background: rgba(0,0,0,0.4);
+  }
+  .sidebar-mobile {
+    position: fixed; left: 0; top: 0; bottom: 0; z-index: 61;
+    width: 260px; background: var(--bg-surface);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+    overflow-y: auto;
+  }
+}
+@media (min-width: 769px) {
+  .sidebar-mobile-overlay, .sidebar-mobile-toggle { display: none !important; }
+}
+
+/* TopBar: compact on mobile */
+@media (max-width: 768px) {
+  .topbar-desktop-only { display: none !important; }
+  .topbar-search { width: 120px !important; }
+}
+@media (max-width: 480px) {
+  .topbar-search { display: none !important; }
+  .topbar-filters { display: none !important; }
+}
+
+/* Gantt: full-width scroll on mobile, touch-friendly bars */
+@media (max-width: 768px) {
+  .gantt-story-bar { min-height: 36px !important; }
+  .gantt-story-bar span { font-size: 11px !important; }
+}
+
+/* Admin page: stack sidebar on mobile */
+@media (max-width: 768px) {
+  .admin-layout { flex-direction: column !important; }
+  .admin-sidebar {
+    width: 100% !important; flex-direction: row !important;
+    overflow-x: auto; border-right: none !important;
+    border-bottom: 1px solid var(--border) !important;
+    padding: 8px !important; gap: 2px !important;
+  }
+  .admin-sidebar button { padding: 6px 10px !important; white-space: nowrap; }
+  .admin-content { padding: 16px !important; }
+}
+
+/* Modal: full-screen on mobile */
+@media (max-width: 640px) {
+  .modal-content {
+    width: 100vw !important; max-width: 100vw !important;
+    height: 100vh !important; max-height: 100vh !important;
+    border-radius: 0 !important; margin: 0 !important;
+  }
+}
+
+/* Onboarding: compact on mobile */
+@media (max-width: 480px) {
+  .onboarding-card { padding: 16px 20px !important; max-width: 100% !important; }
+  .onboarding-card-btn { width: 140px !important; padding: 14px 12px !important; }
+}
+
+/* Spin animation for loading spinners */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

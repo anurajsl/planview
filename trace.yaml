@@ -1,0 +1,251 @@
+# ============================================================
+# TRACE — PlanView Project Configuration
+# Structural coherence for the Gantt-first PM platform
+# ============================================================
+
+project:
+  name: "planview"
+  version: "1.0.0"
+  created: "2026-03-28"
+
+# ----------------------------------------------------------
+# PILLAR T: Truth Anchoring
+# ----------------------------------------------------------
+anchors:
+  - id: shared_types
+    description: "All TypeScript interfaces, enums, and API contracts"
+    file: "packages/shared/src/index.ts"
+    consumers:
+      - "apps/api/src/database/entities.ts"
+      - "apps/api/src/auth/dto/auth.dto.ts"
+      - "apps/api/src/stories/dto/story.dto.ts"
+      - "apps/web/src/api/client.ts"
+      - "apps/web/src/hooks/useTimeline.ts"
+      - "apps/web/src/stores/auth.store.ts"
+      - "apps/web/src/stores/timeline.store.ts"
+
+  - id: db_schema
+    description: "PostgreSQL DDL with RLS — ground truth for data model"
+    file: "apps/api/src/database/init.sql"
+    consumers:
+      - "apps/api/src/database/entities.ts"
+      - "apps/api/src/database/seed.ts"
+
+  - id: entities
+    description: "TypeORM entity definitions — must match init.sql and shared types"
+    file: "apps/api/src/database/entities.ts"
+    consumers:
+      - "apps/api/src/auth/auth.service.ts"
+      - "apps/api/src/projects/projects.service.ts"
+      - "apps/api/src/features/features.service.ts"
+      - "apps/api/src/stories/stories.service.ts"
+      - "apps/api/src/subtasks/subtasks.service.ts"
+      - "apps/api/src/dependencies/dependencies.service.ts"
+      - "apps/api/src/timeline/timeline.service.ts"
+      - "apps/api/src/users/users.service.ts"
+      - "apps/api/src/audit/audit.service.ts"
+
+  - id: api_client
+    description: "Frontend API client — must match backend controller routes"
+    file: "apps/web/src/api/client.ts"
+    consumers:
+      - "apps/web/src/hooks/useTimeline.ts"
+      - "apps/web/src/stores/auth.store.ts"
+
+  - id: app_module
+    description: "Root NestJS module — guards, middleware, DB config"
+    file: "apps/api/src/app.module.ts"
+    consumers:
+      - "apps/api/src/common/guards/jwt-auth.guard.ts"
+      - "apps/api/src/common/guards/roles.guard.ts"
+      - "apps/api/src/common/middleware/tenant.middleware.ts"
+
+  - id: gantt_layout
+    description: "Gantt chart row heights — DependencyLines must match"
+    file: "apps/web/src/components/gantt/GanttChart.tsx"
+    consumers:
+      - "apps/web/src/components/gantt/DependencyLines.tsx"
+
+  - id: websocket_gateway
+    description: "WebSocket event gateway — event names must match frontend hook"
+    file: "apps/api/src/websocket/events.gateway.ts"
+    consumers:
+      - "apps/web/src/hooks/useWebSocket.ts"
+      - "apps/api/src/stories/stories.service.ts"
+
+  - id: spec_doc
+    description: "Project specification for AI IDEs"
+    file: "SPEC.md"
+    consumers:
+      - "HANDOFF_DOCUMENT.md"
+
+# ----------------------------------------------------------
+# PILLAR R: Registry Enforcement
+# ----------------------------------------------------------
+registry:
+  docs_root: "."
+  tracked_docs:
+    - file: "SPEC.md"
+      tracks: "api_endpoints"
+    - file: "HANDOFF_DOCUMENT.md"
+      tracks: "build_state"
+    - file: "README.md"
+      tracks: "setup_instructions"
+  review_cycle: "weekly"
+
+# ----------------------------------------------------------
+# PILLAR A: Automated Verification
+# ----------------------------------------------------------
+verification:
+  tiers:
+    tier1:
+      description: "Unit tests + type checking"
+      command: ""
+      min_count: 0
+    tier2:
+      description: "Integration tests"
+      command: ""
+      min_count: 0
+    tier3:
+      description: "E2E tests"
+      command: ""
+      min_count: 0
+
+# ----------------------------------------------------------
+# PILLAR C: Controlled Evolution
+# ----------------------------------------------------------
+thresholds:
+  max_file_lines: 600
+  max_function_lines: 80
+  max_cyclomatic: 15
+  max_anchor_consumers: 15
+
+# ----------------------------------------------------------
+# PILLAR E: Execution Contracts
+# ----------------------------------------------------------
+contracts:
+  feature:
+    description: "Adding new functionality"
+    requires_scope_declaration: true
+    verification_tier: "tier1"
+    steps:
+      - "Identify affected anchors"
+      - "Update shared types if needed"
+      - "Implement backend (controller + service)"
+      - "Add API client function"
+      - "Add React Query hook"
+      - "Build UI component"
+      - "Update SPEC.md and HANDOFF_DOCUMENT.md"
+
+  add_entity:
+    description: "Adding a new entity to the data model"
+    requires_scope_declaration: true
+    verification_tier: "tier1"
+    steps:
+      - "Update packages/shared/src/index.ts with interface"
+      - "Add table to apps/api/src/database/init.sql"
+      - "Add entity to apps/api/src/database/entities.ts"
+      - "Register entity in apps/api/src/app.module.ts"
+      - "Create NestJS module (controller + service)"
+      - "Add API functions to apps/web/src/api/client.ts"
+      - "Update SPEC.md API table"
+
+  modify_schema:
+    description: "Changing database schema"
+    requires_scope_declaration: true
+    verification_tier: "tier1"
+    steps:
+      - "Update apps/api/src/database/init.sql"
+      - "Update apps/api/src/database/entities.ts to match"
+      - "Update packages/shared/src/index.ts interface"
+      - "Update seed.ts if affected"
+      - "Verify RLS policies still apply"
+
+  modify_gantt_layout:
+    description: "Changing Gantt row heights or layout"
+    requires_scope_declaration: false
+    verification_tier: "tier1"
+    steps:
+      - "Update constants in GanttChart.tsx"
+      - "Update matching constants in DependencyLines.tsx"
+      - "Verify dependency lines align with story bars"
+
+  bugfix:
+    description: "Fixing a known defect"
+    requires_scope_declaration: false
+    verification_tier: "tier1"
+    root_cause_required: true
+    steps:
+      - "Identify root cause"
+      - "Fix at the source"
+      - "Verify no other consumers affected"
+      - "Update HANDOFF_DOCUMENT.md"
+
+file_classification:
+  core:
+    description: "Anchor files. High impact."
+    patterns:
+      - "packages/shared/src/**"
+      - "apps/api/src/database/**"
+      - "apps/api/src/app.module.ts"
+    min_verification: "tier1"
+    requires_review: true
+  supporting:
+    description: "Consumer files. Moderate impact."
+    patterns:
+      - "apps/api/src/*/*.service.ts"
+      - "apps/api/src/*/*.controller.ts"
+      - "apps/web/src/components/**"
+      - "apps/web/src/api/**"
+    min_verification: "tier1"
+    requires_review: true
+  peripheral:
+    description: "Low coupling."
+    patterns:
+      - "apps/web/src/pages/**"
+      - "*.md"
+    min_verification: "tier1"
+    requires_review: false
+
+gates:
+  start:
+    checks:
+      - "trace_state_exists"
+      - "baseline_tests_pass"
+    on_fail: "warn"
+  end:
+    checks:
+      - "anchors_coherent"
+      - "docs_updated"
+      - "handoff_ready"
+    on_fail: "warn"
+
+artifacts:
+  trace_state: ".trace/TRACE_STATE.yaml"
+  project_log: ".trace/PROJECT_LOG.md"
+  live_checkpoint: ".trace/LIVE_CHECKPOINT.yaml"
+  debt_log: ".trace/DEBT.yaml"
+  handoff: "HANDOFF_DOCUMENT.md"
+
+quality:
+  checks: []
+
+dependencies:
+  policy: moderate
+  audit: true
+  blocked: []
+  rules:
+    require_license: true
+    warn_prerelease: true
+    allowed_licenses: []
+    blocked_licenses:
+      - GPL-3.0
+      - AGPL-3.0
+
+scopes:
+  frontend:
+    anchors: [shared_types, api_client, gantt_layout, websocket_gateway]
+  backend:
+    anchors: [shared_types, db_schema, entities, app_module, websocket_gateway]
+  full:
+    anchors: [shared_types, db_schema, entities, api_client, app_module, gantt_layout, websocket_gateway, spec_doc]
