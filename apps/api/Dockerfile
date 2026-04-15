@@ -25,6 +25,7 @@ RUN npm ci --workspace=@planview/api --workspace=@planview/shared --include-work
 
 COPY --from=builder /app/apps/api/dist apps/api/dist
 COPY --from=builder /app/packages/shared/src packages/shared/src
+COPY --from=builder /app/apps/api/src/database/init.sql apps/api/dist/database/init.sql
 
 USER planview
 EXPOSE 4000
